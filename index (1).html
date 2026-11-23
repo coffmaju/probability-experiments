@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Math 105Z | Interactive Probability Experiments</title>
+<style>
+:root{--blue:#00529b;--gold:#ffb300;--ink:#203047;--muted:#58677a;--bg:#f3f6fa;--line:#d5deea}
+*{box-sizing:border-box}body{margin:0;font:16px system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--blue);color:white;border-top:7px solid var(--gold);padding:20px max(18px,calc((100vw - 960px)/2))}header h1{font-size:1.7rem;margin:0 0 5px}header p{margin:0;opacity:.9}
+main{max-width:960px;margin:22px auto;padding:0 16px}.tabs{display:flex;gap:8px;border-bottom:2px solid var(--line);margin-bottom:18px}.tab{border:0;border-radius:8px 8px 0 0;background:#e5ebf3;color:var(--ink);padding:12px 22px;font-size:1rem;font-weight:700;cursor:pointer}.tab[aria-selected=true]{background:var(--blue);color:white}.panel{background:white;border:1px solid var(--line);border-radius:0 12px 12px 12px;padding:24px;text-align:center;box-shadow:0 3px 14px #1a35500b}.panel[hidden]{display:none}h2{color:var(--blue);margin:0 0 8px}p{line-height:1.5}.hint{color:var(--muted);margin:0 0 18px}.actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:20px 0 12px}button.action{background:var(--blue);color:white;border:0;border-radius:8px;padding:11px 20px;font-weight:700;font-size:1rem;cursor:pointer}button.action.secondary{background:#e9eef5;color:var(--blue);border:1px solid #b8c9db}button:disabled{opacity:.5;cursor:wait}button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}.result{font-weight:750;color:var(--blue);font-size:1.3rem;min-height:1.8em}.wheel-wrapper{position:relative;width:min(360px,85vw);aspect-ratio:1;margin:24px auto}.pointer{position:absolute;top:-15px;left:50%;transform:translateX(-50%);border-left:16px solid transparent;border-right:16px solid transparent;border-top:32px solid #d82c39;z-index:2;filter:drop-shadow(0 2px 3px #0005)}canvas{width:100%;height:100%;border-radius:50%;box-shadow:0 7px 20px #0003}.coin{width:220px;height:220px;margin:18px auto;perspective:900px}.coin-face{width:100%;height:100%;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 32% 28%,#fff3b5,#e8b74b 60%,#a96b14);border:10px ridge #dca635;box-shadow:0 8px 18px #0003;font-size:4.5rem;font-weight:850;color:#74500e;backface-visibility:hidden;transition:transform .12s}.coin-face.flipping{animation:flip .85s ease-in-out}@keyframes flip{0%{transform:rotateY(0)}100%{transform:rotateY(1080deg)}}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;max-width:620px;margin:18px auto}.stat{background:#f0f5fa;border:1px solid var(--line);border-radius:8px;padding:12px 6px}.stat strong{display:block;font-size:1.6rem;color:var(--blue)}.stat span{font-size:.88rem;color:var(--muted)}.bar{display:flex;max-width:620px;height:22px;background:#e7edf5;border-radius:5px;overflow:hidden;margin:8px auto}.bar-heads{background:var(--blue);width:0;transition:width .3s}.bar-tails{background:var(--gold);width:0;transition:width .3s}.legend{font-size:.88rem;color:var(--muted)}.swatch{display:inline-block;width:12px;height:12px;vertical-align:-1px;margin-right:4px}.swatch.h{background:var(--blue)}.swatch.t{background:var(--gold)}.note{font-size:.93rem;color:var(--muted);margin-top:18px}footer{text-align:center;color:var(--muted);font-size:.85rem;padding:20px}@media(max-width:480px){.panel{padding:18px 12px}.tab{flex:1;padding:12px 8px}.coin{width:190px;height:190px}.stats{gap:5px}.stat strong{font-size:1.3rem}}
+/* Larger, classroom-friendly typography */
+body{font-size:20px}
+header h1{font-size:2.25rem}
+header p{font-size:1.2rem}
+h2{font-size:1.85rem}
+.hint,.note{font-size:1.15rem}
+.tab{font-size:1.3rem;padding:16px 26px}
+button.action{font-size:1.25rem;padding:15px 25px}
+.result{font-size:1.7rem}
+.stat strong{font-size:2.2rem}
+.stat span,.legend{font-size:1.1rem}
+footer{font-size:1rem}
+@media(max-width:480px){header h1{font-size:1.75rem}.tab{font-size:1.1rem}.stat strong{font-size:1.65rem}}
+
+/* Die with familiar dot patterns */
+.die-stage{display:flex;justify-content:center;padding:14px 0}
+.die-face{display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);align-items:center;justify-items:center;width:210px;height:210px;padding:24px;background:#fff;border:4px solid #d4dfeb;border-radius:26px;box-shadow:0 9px 0 #c3d0de,0 14px 22px #0002;transform-origin:center}
+.pip{display:block;width:34px;height:34px;border-radius:50%;background:#203047;box-shadow:inset 3px 4px 4px #0004}
+.die-face.rolling{animation:die-wobble .65s ease-in-out}
+@keyframes die-wobble{0%{transform:rotate(-9deg) scale(.94)}35%{transform:rotate(12deg) scale(1.05)}70%{transform:rotate(-8deg)}100%{transform:rotate(0)}}
+.table-scroll{overflow-x:auto;max-width:650px;margin:20px auto}.die-table{width:100%;border-collapse:collapse;font-size:1.05rem}.die-table th,.die-table td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:center}.die-table thead{background:#eaf1f8;color:var(--blue)}
+@media(max-width:480px){.die-face{width:175px;height:175px;padding:18px}.pip{width:28px;height:28px}.tab{font-size:1rem}}
+</style>
+</head>
+<body>
+<header><h1>Math 105Z — Interactive Probability Experiments</h1><p>Explore theoretical and experimental probability</p></header>
+<main>
+<div class="tabs" role="tablist" aria-label="Choose an experiment">
+<button class="tab" id="coinTab" role="tab" aria-controls="coinPanel" aria-selected="true">Coin Flip</button>
+<button class="tab" id="dieTab" role="tab" aria-controls="diePanel" aria-selected="false">Roll a Die</button>
+<button class="tab" id="spinnerTab" role="tab" aria-controls="spinnerPanel" aria-selected="false">Spinner</button>
+</div>
+<section class="panel" id="coinPanel" role="tabpanel" aria-labelledby="coinTab">
+<h2>Experiment 1: Flip a Coin</h2><p class="hint">A fair coin has two equally likely outcomes: Heads and Tails. Each has theoretical probability 50%.</p>
+<div class="coin" aria-hidden="true"><div class="coin-face" id="coinFace">H</div></div>
+<div class="actions"><button class="action" id="flipOne">Flip Once</button><button class="action" id="flipTwenty">Flip 20 Times</button><button class="action secondary" id="resetCoin">Reset</button></div>
+<div class="result" id="coinResult" aria-live="polite">Ready to flip!</div>
+<div class="stats"><div class="stat"><strong id="headsCount">0</strong><span>Heads</span></div><div class="stat"><strong id="tailsCount">0</strong><span>Tails</span></div><div class="stat"><strong id="totalCount">0</strong><span>Total flips</span></div></div>
+<div class="bar" aria-label="Proportion of heads and tails"><div class="bar-heads" id="headsBar"></div><div class="bar-tails" id="tailsBar"></div></div>
+<div class="legend"><span class="swatch h"></span>Heads: <strong id="headsPct">—</strong> &nbsp; <span class="swatch t"></span>Tails: <strong id="tailsPct">—</strong></div>
+<p class="note">Compare your experimental percentages with the theoretical 50% for each outcome.</p>
+</section>
+<section class="panel" id="diePanel" role="tabpanel" aria-labelledby="dieTab" hidden>
+<h2>Experiment 2: Roll a Six-Sided Die</h2><p class="hint">A fair die has six equally likely outcomes. Each number has theoretical probability 1/6 (about 16.7%).</p>
+<div class="die-stage"><div id="dieFace" class="die-face" role="img" aria-label="Die showing one dot"><span class="pip" style="grid-area:2/2"></span></div></div>
+<div class="actions"><button class="action" id="rollOne">Roll Once</button><button class="action" id="rollTen">Roll 10 Times</button><button class="action secondary" id="resetDie">Reset</button></div>
+<div class="result" id="dieResult" aria-live="polite">Ready to roll!</div>
+<p class="note">Experimental probability = frequency ÷ total rolls.</p>
+<div class="table-scroll"><table class="die-table"><thead><tr><th>Outcome</th><th>Frequency</th><th>Experimental probability</th></tr></thead><tbody id="dieRows"></tbody></table></div>
+<div class="stats"><div class="stat"><strong id="evenCount">0</strong><span>Even rolls</span></div><div class="stat"><strong id="oddCount">0</strong><span>Odd rolls</span></div><div class="stat"><strong id="dieTotal">0</strong><span>Total rolls</span></div></div>
+<p class="note" id="evenOddPct">Even: — &nbsp; | &nbsp; Odd: — (theoretical probability: 50% each)</p>
+</section>
+<section class="panel" id="spinnerPanel" role="tabpanel" aria-labelledby="spinnerTab" hidden>
+<h2>Experiment 3: Spin the Wheel</h2><p class="hint">Ten equally sized numbered sections: 4 red, 3 green, 2 blue, and 1 yellow.</p>
+<div class="wheel-wrapper"><div class="pointer"></div><canvas id="wheel" width="500" height="500" aria-label="Ten-section numbered probability spinner"></canvas></div>
+<div class="actions"><button class="action" id="spinBtn">Spin Wheel</button></div>
+<div class="result" id="result" aria-live="polite">Click Spin to start!</div><div id="spin-color" aria-live="polite"></div>
+<p class="note">Try finding the theoretical probability of landing on red, green, blue, or yellow before spinning.</p>
+</section>
+</main><footer>By Julianne Coffman · November 2026</footer>
+<script>
+'use strict';
+// Tab switching: each experiment retains its state.
+const coinTab=document.getElementById('coinTab'),dieTab=document.getElementById('dieTab'),spinnerTab=document.getElementById('spinnerTab');
+function showTab(which){for(const name of ['coin','die','spinner']){const tab=document.getElementById(name+'Tab');const panel=document.getElementById(name+'Panel');const selected=name===which;tab.setAttribute('aria-selected',String(selected));panel.hidden=!selected;}}
+coinTab.addEventListener('click',()=>showTab('coin'));dieTab.addEventListener('click',()=>showTab('die'));spinnerTab.addEventListener('click',()=>showTab('spinner'));
+// Coin flip: unbiased independent outcomes.
+let heads=0,tails=0,coinBusy=false;
+const coinFace=document.getElementById('coinFace'),coinResult=document.getElementById('coinResult');
+function updateCoin(){const n=heads+tails;document.getElementById('headsCount').textContent=heads;document.getElementById('tailsCount').textContent=tails;document.getElementById('totalCount').textContent=n;const hp=n?100*heads/n:0;document.getElementById('headsPct').textContent=n?hp.toFixed(1)+'%':'—';document.getElementById('tailsPct').textContent=n?(100-hp).toFixed(1)+'%':'—';document.getElementById('headsBar').style.width=hp+'%';document.getElementById('tailsBar').style.width=(n?100-hp:0)+'%';}
+function flipCoin(n){if(coinBusy)return;coinBusy=true;document.getElementById('flipOne').disabled=true;document.getElementById('flipTwenty').disabled=true;coinFace.classList.remove('flipping');void coinFace.offsetWidth;coinFace.classList.add('flipping');let last='';for(let i=0;i<n;i++){last=Math.random()<.5?'Heads':'Tails';if(last==='Heads')heads++;else tails++;}coinResult.textContent='Flipping…';setTimeout(()=>{coinFace.textContent=last==='Heads'?'H':'T';coinFace.classList.remove('flipping');coinResult.textContent=n===1?'Result: '+last:'Completed 20 flips. Last result: '+last;updateCoin();coinBusy=false;document.getElementById('flipOne').disabled=false;document.getElementById('flipTwenty').disabled=false;},850);}
+document.getElementById('flipOne').addEventListener('click',()=>flipCoin(1));document.getElementById('flipTwenty').addEventListener('click',()=>flipCoin(20));document.getElementById('resetCoin').addEventListener('click',()=>{if(coinBusy)return;heads=0;tails=0;coinFace.textContent='H';coinResult.textContent='Ready to flip!';updateCoin();});
+// Six-sided die: standard pip patterns and independent fair rolls.
+const dieFace=document.getElementById('dieFace'),dieResult=document.getElementById('dieResult');
+const pipPositions={1:[[2,2]],2:[[1,1],[3,3]],3:[[1,1],[2,2],[3,3]],4:[[1,1],[1,3],[3,1],[3,3]],5:[[1,1],[1,3],[2,2],[3,1],[3,3]],6:[[1,1],[1,3],[2,1],[2,3],[3,1],[3,3]]};
+let dieCounts=[0,0,0,0,0,0],dieBusy=false;
+function showDie(n){dieFace.replaceChildren();for(const [r,c] of pipPositions[n]){const pip=document.createElement('span');pip.className='pip';pip.style.gridArea=r+'/'+c;dieFace.appendChild(pip);}dieFace.setAttribute('aria-label','Die showing '+n+' dots');}
+function updateDie(){const total=dieCounts.reduce((a,b)=>a+b,0);document.getElementById('dieRows').innerHTML=dieCounts.map((count,i)=>'<tr><th scope="row">'+(i+1)+'</th><td>'+count+'</td><td>'+(total?(100*count/total).toFixed(1)+'%':'—')+'</td></tr>').join('');const even=dieCounts[1]+dieCounts[3]+dieCounts[5],odd=total-even;document.getElementById('evenCount').textContent=even;document.getElementById('oddCount').textContent=odd;document.getElementById('dieTotal').textContent=total;document.getElementById('evenOddPct').textContent=total?'Even: '+(100*even/total).toFixed(1)+'% | Odd: '+(100*odd/total).toFixed(1)+'% (theoretical: 50% each)':'Even: — | Odd: — (theoretical: 50% each)';}
+function rollDie(times){if(dieBusy)return;dieBusy=true;for(const id of ['rollOne','rollTen','resetDie'])document.getElementById(id).disabled=true;dieFace.classList.add('rolling');dieResult.textContent='Rolling…';let last=1;for(let i=0;i<times;i++){last=1+Math.floor(Math.random()*6);dieCounts[last-1]++;}setTimeout(()=>{showDie(last);dieFace.classList.remove('rolling');dieResult.textContent=times===1?'Rolled: '+last:'Completed 10 rolls. Last result: '+last;updateDie();dieBusy=false;for(const id of ['rollOne','rollTen','resetDie'])document.getElementById(id).disabled=false;},650);}
+document.getElementById('rollOne').addEventListener('click',()=>rollDie(1));document.getElementById('rollTen').addEventListener('click',()=>rollDie(10));document.getElementById('resetDie').addEventListener('click',()=>{if(dieBusy)return;dieCounts=[0,0,0,0,0,0];showDie(1);dieResult.textContent='Ready to roll!';updateDie();});updateDie();
+// Original spinner: same numbers, segment colors, pointer, and easing.
+const canvas=document.getElementById('wheel'),ctx=canvas.getContext('2d'),spinBtn=document.getElementById('spinBtn'),resultDiv=document.getElementById('result'),resultColor=document.getElementById('spin-color');
+const segments=[1,2,3,4,5,6,7,8,9,10];
+const colors=['#ef4444','#10b981','#ef4444','#3b82f6','#ef4444','#10b981','#3b82f6','#ef4444','#10b981','#FFFF00'];
+const numberColor=['Red','Green','Red','Blue','Red','Green','Blue','Red','Green','Yellow'];
+const numSegments=segments.length,arcSize=2*Math.PI/numSegments,centerX=canvas.width/2,centerY=canvas.height/2,radius=canvas.width/2-10;
+let currentAngle=0,isSpinning=false;
+function drawWheel(){ctx.clearRect(0,0,canvas.width,canvas.height);for(let i=0;i<numSegments;i++){const startAngle=currentAngle+i*arcSize,endAngle=startAngle+arcSize;ctx.beginPath();ctx.moveTo(centerX,centerY);ctx.arc(centerX,centerY,radius,startAngle,endAngle);ctx.closePath();ctx.fillStyle=colors[i];ctx.fill();ctx.lineWidth=3;ctx.strokeStyle='#1e293b';ctx.stroke();ctx.save();ctx.translate(centerX,centerY);ctx.rotate(startAngle+arcSize/2);ctx.textAlign='right';ctx.fillStyle=i===9?'#1e293b':'#ffffff';ctx.font='bold 43px system-ui, sans-serif';ctx.fillText(segments[i],radius-30,12);ctx.restore();}ctx.beginPath();ctx.arc(centerX,centerY,25,0,2*Math.PI);ctx.fillStyle='#1e293b';ctx.fill();ctx.lineWidth=4;ctx.strokeStyle='#ffffff';ctx.stroke();}
+function getWinningNumber(){const pointerAngle=1.5*Math.PI;const normalizedAngle=(pointerAngle-(currentAngle%(2*Math.PI))+2*Math.PI)%(2*Math.PI);return segments[Math.floor(normalizedAngle/arcSize)];}
+function spin(){if(isSpinning)return;isSpinning=true;spinBtn.disabled=true;resultDiv.textContent='Spinning…';resultColor.textContent='';const spinDuration=4000,extraSpins=(5+Math.random()*5)*2*Math.PI,startAngle=currentAngle,targetAngle=startAngle+extraSpins,startTime=performance.now();function animate(now){const progress=Math.min((now-startTime)/spinDuration,1),easeOut=1-Math.pow(1-progress,3);currentAngle=startAngle+(targetAngle-startAngle)*easeOut;drawWheel();if(progress<1)requestAnimationFrame(animate);else{isSpinning=false;spinBtn.disabled=false;const winner=getWinningNumber();resultDiv.textContent='Landed on: '+winner;resultColor.textContent='Color: '+numberColor[winner-1];resultColor.style.color=colors[winner-1]==='#FFFF00'?'#8a6900':colors[winner-1];}}requestAnimationFrame(animate);}
+spinBtn.addEventListener('click',spin);drawWheel();updateCoin();
+</script>
+</body>
+</html>
