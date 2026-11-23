@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1 to 10 Spinning Wheel</title>
+  <style>
+    #main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      background-color: #1e293b;
+      font-family: system-ui, -apple-system, sans-serif;
+      color: #f8fafc;
+    }
+
+    .wheel-wrapper {
+      position: relative;
+      width: 360px;
+      height: 360px;
+      margin-bottom: 24px;
+    }
+
+    /* Top indicator pointer */
+    .pointer {
+      position: absolute;
+      top: -16px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 16px solid transparent;
+      border-right: 16px solid transparent;
+      border-top: 32px solid #ef4444;
+      z-index: 10;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    }
+
+    button {
+      padding: 12px 32px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #fff;
+      background-color: #3b82f6;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+    }
+
+    button:hover:not(:disabled) {
+      background-color: #2563eb;
+    }
+
+    button:active:not(:disabled) {
+      transform: scale(0.97);
+    }
+
+    button:disabled {
+      background-color: #64748b;
+      cursor: not-allowed;
+    }
+
+    #result {
+      margin-top: 20px;
+      font-size: 1.5rem;
+      font-weight: bold;
+      min-height: 2rem;
+      color: #38bdf8;
+    }
+  </style>
+</head>
+<body>
+  <div id="main">
+  <h1>MTH 105 - Probability Demo</h1>>
+  <div class="wheel-wrapper">
+    <div class="pointer"></div>
+    <canvas id="wheel" width="500" height="500"></canvas>
+  </div>
+
+  <button id="spinBtn">Spin Wheel</button>
+  <div id="result">Click Spin to start!</div>
+  <div id="spin-color"></div>
+
+  <script>
+    const canvas = document.getElementById('wheel');
+    const ctx = canvas.getContext('2d');
+    const spinBtn = document.getElementById('spinBtn');
+    const resultDiv = document.getElementById('result');
+    const resultColor = document.getElementById('spin-color');
+
+    const segments = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    const colors = [
+      '#ef4444', '#10b981','#ef4444',  '#3b82f6', '#ef4444','#10b981',
+       '#3b82f6',  '#ef4444','#10b981', '#FFFF00'
+    ];
+    const numberColor = [
+      "Red", "Green", "Red", "Blue", "Red", "Green", 
+      "Blue", "Red", "Green", "Yellow"
+    ]
+
+    const numSegments = segments.length;
+    const arcSize = (2 * Math.PI) / numSegments;
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radius = canvas.width / 2 - 10;
+
+    let currentAngle = 0;
+    let isSpinning = false;
+
+    function drawWheel() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (let i = 0; i < numSegments; i++) {
+        const startAngle = currentAngle + i * arcSize;
+        const endAngle = startAngle + arcSize;
+
+        // Draw slice
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+        ctx.closePath();
+        ctx.fillStyle = colors[i % colors.length];
+        ctx.fill();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#1e293b';
+        ctx.stroke();
+
+        // Draw number label
+        ctx.save();
+        ctx.translate(centerX, centerY);
+        ctx.rotate(startAngle + arcSize / 2);
+        ctx.textAlign = 'right';
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 34px system-ui, sans-serif';
+        ctx.fillText(segments[i], radius - 30, 12);
+        ctx.restore();
+      }
+
+      // Draw center hub
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, 25, 0, 2 * Math.PI);
+      ctx.fillStyle = '#1e293b';
+      ctx.fill();
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = '#ffffff';
+      ctx.stroke();
+    }
+
+    function getWinningNumber() {
+      // Top pointer sits at 270 degrees (1.5 * PI)
+      const pointerAngle = 1.5 * Math.PI;
+      const normalizedAngle = (pointerAngle - (currentAngle % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+      const winningIndex = Math.floor(normalizedAngle / arcSize);
+      return segments[winningIndex];
+    }
+
+    function spin() {
+      if (isSpinning) return;
+      isSpinning = true;
+      spinBtn.disabled = true;
+      resultDiv.textContent = 'Spinning...';
+      
+      const spinDuration = 4000; // 4 seconds
+      const extraSpins = (5 + Math.random() * 5) * 2 * Math.PI; // 5 to 10 full rotations
+      const startAngle = currentAngle;
+      const targetAngle = startAngle + extraSpins;
+      const startTime = performance.now();
+
+      function animate(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / spinDuration, 1);
+
+        // Ease-out cubic deceleration
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        currentAngle = startAngle + (targetAngle - startAngle) * easeOut;
+
+        drawWheel();
+
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          isSpinning = false;
+          spinBtn.disabled = false;
+          const winner = getWinningNumber();
+          const colorWinner = numberColor[winner-1];
+          resultDiv.textContent = `Landed on: ${winner}`;
+          resultColor.textContent = `Color: ${colorWinner}`;
+          resultColor.style.color = colors[winner-1]
+        }
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    spinBtn.addEventListener('click', spin);
+
+    // Initial render
+    drawWheel();
+  </script>
+  </div>
+  <div>
+  <footer>By Julianne Coffman 11/2026</footer>
+  </div>
+</body>
+</html>
